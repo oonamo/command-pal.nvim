@@ -1,5 +1,9 @@
 H.default	command_pal-config.txt	/*H.default*
 M	command_pal-utils.txt	/*M*
+M.__command_displayer()	command_pal-palette.txt	/*M.__command_displayer()*
+M.new_item()	command_pal-palette.txt	/*M.new_item()*
+M.open_picker()	command_pal-palette.txt	/*M.open_picker()*
+M:filter_builtins()	command_pal-palette.txt	/*M:filter_builtins()*
 command-pal	command_pal-config.txt	/*command-pal*
 command_pal	command_pal-config.txt	/*command_pal*
 handle_entry_index()	command_pal-utils.txt	/*handle_entry_index()*

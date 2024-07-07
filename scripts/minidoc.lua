@@ -20,9 +20,11 @@ end
 local modules = {
   'utils',
   'config',
-  'command_palette',
+  -- 'command_palette'
+  'palette',
 }
 
 for _, m in ipairs(modules) do
+  vim.notify('generating for ' .. m)
   MiniDoc.generate({ 'lua/command_pal/' .. m .. '.lua' }, 'doc/command_pal-' .. m .. '.txt', { hooks = hooks })
 end

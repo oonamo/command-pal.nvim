@@ -1,5 +1,3 @@
--- TODO: set actions as key = value pair, then merge instead of storing as array
-
 local actions = require('telescope.actions')
 local action_state = require('telescope.actions.state')
 local conf = require('telescope.config').values
@@ -36,7 +34,7 @@ local config = require('command_pal.config').config
 
 ---@class CommandPalette
 
----@tag command-pal.command-palette.specification
+-- ---@tag command-pal.command-palette.specification
 -- mod def
 local M = {}
 
@@ -223,7 +221,6 @@ function M.__command_displayer(opts)
   local displayer = entry_display.create({
     separator = ' ',
     items = {
-      { width = M.__largest_group_size + 1 },
       { width = 0.2 },
       { width = 0.7 },
       { width = 10 },
@@ -233,7 +230,6 @@ function M.__command_displayer(opts)
 
   local make_display = function(entry)
     return displayer({
-      { entry.group, 'TelescopeResultsIdentifier' },
       entry.name,
       { entry.desc, 'TelescopeResultsComment' },
       entry.cmd_str,
@@ -248,7 +244,6 @@ function M.__command_displayer(opts)
     return utils.make_entry.set_default_entry_mt({
       name = entry.name,
       handler = entry.handler,
-      group = entry.group,
       desc = entry.desc,
       definition = entry.definition,
       cmd_str = entry.cmd_str,

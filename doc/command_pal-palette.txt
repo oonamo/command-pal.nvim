@@ -1,0 +1,87 @@
+Class ~
+{_MappedAction}
+Fields ~
+{name} `(string)`
+{keymap} `(string)`
+{handler} `(fun(...): nil)`
+{desc} `(string)`
+
+------------------------------------------------------------------------------
+Class ~
+{CommandPalette}
+Fields ~
+{builtin} `(table<BuiltinPaletteItem, ...>)`
+{actions} CommandPaletteItem[]
+{opts} `(table)`
+{__mapped_actions} _MappedAction[]
+
+------------------------------------------------------------------------------
+Class ~
+{BuiltinPaletteItem}
+Fields ~
+{command} `(fun()|string)`
+{desc} `(string)`
+
+------------------------------------------------------------------------------
+Class ~
+{Builtin}
+Fields ~
+{w} BuiltinPaletteItem
+{wa} BuiltinPaletteItem
+{wa_bang} BuiltinPaletteItem
+{q} BuiltinPaletteItem
+{qa} BuiltinPaletteItem
+{qa_bang} BuiltinPaletteItem
+{colorscheme} BuiltinPaletteItem
+
+------------------------------------------------------------------------------
+Class ~
+{CommandPalette}
+
+------------------------------------------------------------------------------
+Class ~
+{CommandPaletteItem}
+Fields ~
+{group} `(string)` Group of command
+{keymap} `(optional)` `(string)` keymap that launches command
+{name} `(string)` Name of command
+{command} `(string|fun(...):)` nil Command to be called on select
+{desc} `(optional)` `(string)` Short Description of command
+
+------------------------------------------------------------------------------
+'"Vim"'
+'"Quickfix"'
+
+------------------------------------------------------------------------------
+                                                           *M:filter_builtins()*
+                      `M:filter_builtins`({disallow_list})
+Parameters ~
+{disallow_list} []
+
+------------------------------------------------------------------------------
+                                                                  *M.new_item()*
+                              `M.new_item`({item})
+Parameters ~
+{item} CommandPaletteItem
+
+------------------------------------------------------------------------------
+                                                       *M.__command_displayer()*
+                        `M.__command_displayer`({opts})
+Parameters ~
+{opts} PickerOpts
+
+------------------------------------------------------------------------------
+Class ~
+{PickerOpts}
+Fields ~
+{search_for} `(optional)` Oridnals
+{filter_group} `(optional)` `(table<string>)`
+
+------------------------------------------------------------------------------
+                                                               *M.open_picker()*
+                            `M.open_picker`({opts})
+Parameters ~
+{opts} PickerOpts
+
+
+ vim:tw=78:ts=8:noet:ft=help:norl:
