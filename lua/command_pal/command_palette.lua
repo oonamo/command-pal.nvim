@@ -296,5 +296,4 @@ function M.open_picker(opts)
     :find()
 end
 
-M.open_picker({})
 return M
