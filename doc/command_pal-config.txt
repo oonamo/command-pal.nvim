@@ -1,0 +1,45 @@
+*command-pal* Show a Command Palette
+*command_pal*
+==============================================================================
+
+# Features
+  - Emacs' ivy style minibuffer
+  - Use builtin and custom commands. Easily override builtin commands
+    with |command_pal.filter_builtin()|
+
+------------------------------------------------------------------------------
+# Setup
+
+------------------------------------------------------------------------------
+"name"
+"desc"
+
+------------------------------------------------------------------------------
+Class ~
+{CommandPalTelescopeOpts}
+Fields ~
+{title} `(string)`
+{sorter} `(optional)` `(fun(any))`
+{opts} `(table)`
+{search_priority} []
+{fallback} `(string)`
+
+------------------------------------------------------------------------------
+Class ~
+{BuiltinOpts}
+Fields ~
+{filter} builtinGroups[]
+{override} `(fun())`
+
+------------------------------------------------------------------------------
+                                                                     *H.default*
+                                  `H.default`
+Class ~
+{CommandPalConfig}
+Fields ~
+{actions} CommandPaletteItem[]
+{builtin} BuiltinOpts
+{telescope} CommandPalTelescopeOpts
+
+
+ vim:tw=78:ts=8:noet:ft=help:norl:

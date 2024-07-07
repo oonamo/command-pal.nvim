@@ -1,0 +1,5 @@
+H.default	command_pal-config.txt	/*H.default*
+M	command_pal-utils.txt	/*M*
+command-pal	command_pal-config.txt	/*command-pal*
+command_pal	command_pal-config.txt	/*command_pal*
+handle_entry_index()	command_pal-utils.txt	/*handle_entry_index()*

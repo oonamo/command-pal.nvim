@@ -49,6 +49,7 @@ local M = {}
 
 M.actions = {}
 
+-- TODO: Mini.align this for neater table
 M.builtin = {
   w = { name = 'write', desc = 'Write the whole buffer to the current file.' },
   ['w!'] = { name = 'write force', desc = 'Forcefully Write the whole buffer to the current file.' },
@@ -63,13 +64,14 @@ M.builtin = {
   set = { name = 'Set option', desc = 'Toggle or vim set option', command = true },
   colorscheme = { name = 'Set colorscheme', desc = 'set colorscheme', command = true },
   nohighlights = { name = 'No highlight', desc = 'Remove highlights from search commands' },
+  e = { name = 'Edit File', desc = 'If file exists, then edit file. Otherwise, create new file.', command = true },
   copen = { group = 'Quickfix', name = 'Quickfix Open', desc = 'open quickfix' },
   cclose = { group = 'Quickfix', name = 'Quickfix Close', desc = 'close quickfix' },
   cdo = {
     group = 'Quickfix',
     name = 'Quickfix Do',
     desc = 'run a command across all items in quickfix list',
-    ordinal = 'desc',
+    -- ordinal = 'desc',
     command = true,
   },
 }
@@ -120,9 +122,8 @@ function M.__get_ordinal(action, opts)
 end
 
 function M:__map_builtins()
-  -- TODO: Move this to utilty folder
   local set_cmd = require('command_pal.utils').set_cmdline
-  self.__mapped_actions = self.__mapped_actions or {}
+  local builtin = {}
   for k, v in pairs(self.builtin) do
     if v.group == nil then v.group = 'Vim' end
     if type(v.command) == 'boolean' and v.command == true then
@@ -134,16 +135,38 @@ function M:__map_builtins()
     if type(v.command) == 'string' then v.cmd_str = v.command end
     v.handler = default_handler
     v.ordinal = M.__get_ordinal(v)
-    table.insert(self.__mapped_actions, v)
+    builtin[k] = v
+  end
+  return builtin
+end
+
+-- sort by search_priority
+function M:__merge(...)
+  self.__mapped_actions = self.__mapped_actions or {}
+  local map = {}
+  map = vim.tbl_deep_extend('force', map, ...)
+  for k, v in pairs(map) do
+    if not v.command_str and type(v.command) == 'string' then v.command_str = v.command end
+    if not v.ordinal then v.ordinal = M.__get_ordinal(v) end
+    if not v.handler then v.handler = default_handler end
+    table.insert(self.__mapped_actions, {
+      name = v.name or k,
+      group = v.group,
+      desc = v.desc,
+      cmd_str = v.command_str,
+      command = v.command,
+      ordinal = v.ordinal,
+      handler = v.handler,
+    })
   end
 end
 
 function M:__map_usercommands()
   local command_i = vim.api.nvim_get_commands({})
-  self.__mapped_actions = self.__mapped_actions or {}
   local set_cmd = require('command_pal.utils').set_cmdline
+  local usercommands = {}
   for _, cmd in pairs(command_i) do
-    table.insert(self.__mapped_actions, {
+    usercommands[cmd.name] = {
       name = cmd.name,
       desc = cmd.definition,
       group = 'User',
@@ -154,15 +177,16 @@ function M:__map_usercommands()
         if cmd.nargs and cmd.nargs == '+' then return set_cmd(cmd.name .. ' ') end
         return default_handler
       end)(),
-    })
+    }
   end
+  return usercommands
 end
 
 ---@param item CommandPaletteItem
 function M.new_item(item) table.insert(M.actions, item) end
 
 function M:__map_actions()
-  self.__mapped_actions = self.__mapped_actions or {}
+  local acts = {}
   if config.actions == nil then return end
   for _, v in ipairs(config.actions) do
     if not v.group then
@@ -173,18 +197,25 @@ function M:__map_actions()
     v.command_str = ''
     if type(v.command) == 'string' then v.command_str = v.command end
     v.ordinal = M.__get_ordinal(v)
-    table.insert(self.__mapped_actions, {
-      name = v.name,
-      group = v.group,
-      desc = v.desc or '',
-      cmd_str = v.command_str,
-      ordinal = v.ordinal,
-      handler = function()
-        if type(v.command) == 'string' then vim.cmd(v.command) end
-        if type(v.command) == 'function' then v.command() end
-      end,
-    })
+    v.handler = function()
+      if type(v.command) == 'string' then vim.cmd(v.command) end
+      if type(v.command) == 'function' then v.command() end
+    end
+    acts[v.name] = v
   end
+  return acts
+end
+
+function M:__map_overrides()
+  local overrides = config.builtin.override() or {}
+  for _, v in pairs(overrides) do
+    if not v.command_str then
+      if type(v.command) == 'string' then v.command_str = v.command end
+    end
+    v.ordinal = v.ordinal or M.__get_ordinal(v)
+    v.handler = v.handler or default_handler
+  end
+  return overrides
 end
 
 ---@param opts PickerOpts
@@ -206,15 +237,12 @@ function M.__command_displayer(opts)
       entry.name,
       { entry.desc, 'TelescopeResultsComment' },
       entry.cmd_str,
-      -- entry.desc:gsub("\n", " "),
     })
   end
 
   return function(entry)
-    -- local ordinal = entry.desc ~= "" and entry.desc or entry.name
     if opts.search_for then
       -- TODO: Validate ordinal
-      -- ordinal = entry[opts.search_for]
       entry.ordinal = M.__get_ordinal(entry.ordinal)
     end
     return utils.make_entry.set_default_entry_mt({
@@ -239,12 +267,14 @@ end
 ---@param opts PickerOpts
 function M.open_picker(opts)
   if not M.merged then
-    M:__map_actions()
-    M:__map_builtins()
+    local acts = M:__map_actions()
+    local builtin = M:__map_builtins()
+    -- TODO: Autocommand to update on new commands?
+    local user = M:__map_usercommands()
+    local overrides = M:__map_overrides()
+    M:__merge(builtin, overrides, user, acts)
     M.merged = true
   end
-  -- TODO: Autocommand to create new commands ?
-  M:__map_usercommands()
   opts = opts or {}
   require('telescope.pickers')
     .new(opts, {
@@ -266,6 +296,5 @@ function M.open_picker(opts)
     :find()
 end
 
--- M.open_picker({
--- })
+M.open_picker({})
 return M
