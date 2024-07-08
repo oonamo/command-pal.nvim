@@ -44,7 +44,7 @@ function M.cache.serialize(tbl)
   for k, v in pairs(tbl) do
     serialized = serialized .. tostring(k)
     if type(v) == 'function' then
-      serialized = serialized .. ':f'
+      serialized = serialized .. ':function'
     elseif type(v) == 'table' then
       serialized = serialized .. ':' .. M.cache.serialize(v)
     else

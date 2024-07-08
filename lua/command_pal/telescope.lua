@@ -57,6 +57,7 @@ function M.pick(opts, results)
           actions.close(prompt_bufnr)
           local entry = action_state.get_selected_entry().value
           entry:handler()
+          -- vim.notify(entry.handler(entry))
         end)
         return true
       end,

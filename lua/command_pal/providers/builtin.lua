@@ -39,6 +39,7 @@ M.builtin = {
     desc = 'run a command across all items in quickfix list',
     command = true,
   },
+  help = { name = 'Open Help', desc = 'find help tag', command = true },
 }
 
 ---@param opts CommandPalConfig
@@ -48,18 +49,19 @@ function M:__map_builtins(opts)
 
   for k, v in pairs(self.builtin) do
     if not v.bang and opts.builtin.bang == false then
-      if v.group == nil then v.group = 'Vim' end
-      if type(v.command) == 'boolean' and v.command == true then
-        v.command = set_cmd(k .. ' ')
-      else
-        v.command = k
-      end
-      v.cmd_str = ''
-      if type(v.command) == 'string' then v.cmd_str = v.command end
-      v.handler = default_handler
-      v.ordinal = get_ordinal(v, opts)
-      v.bang = nil
-      builtin[k] = v
+      builtin[k] = {
+        group = v.group or 'Vim',
+        command = (function()
+          if type(v.command) == 'boolean' and v.command then
+            return set_cmd(k .. ' ')
+          else
+            return k
+          end
+        end)(),
+        cmd_str = k,
+        handler = default_handler,
+        ordinal = get_ordinal(v, opts),
+      }
     end
   end
 

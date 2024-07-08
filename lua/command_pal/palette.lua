@@ -44,14 +44,13 @@ local function default_handler(v)
 end
 
 function M:__merge(...)
-  -- self.__mapped_actions = self.__mapped_actions or {}
   local mapped_actions = {}
   local map = {}
   map = vim.tbl_deep_extend('force', map, ...)
   for k, v in pairs(map) do
     if not v.cmd_str and type(v.command) == 'string' then v.cmd_str = v.command end
     if not v.ordinal then v.ordinal = M.__get_ordinal(v) end
-    if not v.handler then v.handler = default_handler end
+    if v.handler == nil then v.handler = default_handler end
     table.insert(mapped_actions, {
       name = v.name or k,
       group = v.group,
@@ -70,12 +69,16 @@ function M:__merge_palette(opts) return self:__merge(unpack(require('command_pal
 
 function M:get_palette(opts)
   self.__cache = self.__cache or {}
-  local key = utils.cache.serialize(opts)
+  local key = ''
+  if opts == nil then
+    key = 'nil'
+  else
+    key = utils.cache.serialize(opts)
+  end
   if self.__cache[key] then return self.__cache[key] end
 
   local mapped_actions = self:__merge_palette(opts)
-  self.__cache[key] = mapped_actions
-
+  self.__cache[key] = vim.deepcopy(mapped_actions)
   return mapped_actions
 end
 
@@ -86,11 +89,6 @@ function M.open_picker(opts)
     opts,
     opts.filter_group ~= nil and M:__filter_group(opts.filter_group, actions) or actions
   )
-  if opts.actions ~= nil then
-    for i = 1, #opts.actions do
-      table.remove(M.__mapped_actions, #M.__mapped_actions - i - 1)
-    end
-  end
 end
 
 return M
