@@ -5,32 +5,18 @@ local entry_display = require('telescope.pickers.entry_display')
 local utils = require('command_pal.utils')
 local config = require('command_pal.config').config
 
----@class _MappedAction
+---@class palette.MappedAction
 ---@field name string
 ---@field keymap string
 ---@field handler fun(...): nil
 ---@field desc string
+---@field ordinal string
+---@field cmd_str string
 
 ---@class CommandPalette
----@field builtin table<BuiltinPaletteItem, ...>
 ---@field actions CommandPaletteItem[]
 ---@field opts table
----@field __mapped_actions _MappedAction[]
-
----@class BuiltinPaletteItem
----@field command fun()|string
----@field desc string
-
----@alias bt BuiltinPaletteItem
-
----@class Builtin
----@field w bt
----@field wa bt
----@field wa_bang bt
----@field q bt
----@field qa bt
----@field qa_bang bt
----@field colorscheme bt
+---@field __mapped_actions palette.MappedAction[]
 
 ---@class CommandPalette
 
@@ -47,49 +33,6 @@ local M = {}
 
 M.actions = {}
 
--- TODO: Mini.align this for neater table
-M.builtin = {
-  w = { name = 'write', desc = 'Write the whole buffer to the current file.' },
-  ['w!'] = { name = 'write force', desc = 'Forcefully Write the whole buffer to the current file.' },
-  wq = { name = 'write quit', desc = 'Write the current file and close the window.' },
-  ['wq!'] = { name = 'write quit force', desc = 'Write buffer and force quit' },
-  wqa = { name = 'write quit all', desc = 'Write all buffers and quit' },
-  ['wqa!'] = { name = 'write quit all force', desc = 'Write all buffers and fore quit' },
-  q = { name = 'write quit', desc = 'Write buffer and Quit' },
-  ['q!'] = { name = 'write quit force', desc = 'Write buffer and Quit' },
-  qa = { name = 'write quit all', desc = 'Write all buffers and quit' },
-  ['qa!'] = { name = 'write quit all', desc = 'Write all buffers and fore quit' },
-  set = { name = 'Set option', desc = 'Toggle or vim set option', command = true },
-  colorscheme = { name = 'Set colorscheme', desc = 'set colorscheme', command = true },
-  nohighlights = { name = 'No highlight', desc = 'Remove highlights from search commands' },
-  e = { name = 'Edit File', desc = 'If file exists, then edit file. Otherwise, create new file.', command = true },
-  copen = { group = 'Quickfix', name = 'Quickfix Open', desc = 'open quickfix' },
-  cclose = { group = 'Quickfix', name = 'Quickfix Close', desc = 'close quickfix' },
-  cdo = {
-    group = 'Quickfix',
-    name = 'Quickfix Do',
-    desc = 'run a command across all items in quickfix list',
-    -- ordinal = 'desc',
-    command = true,
-  },
-}
-
--- size of "Quickfix"
-M.__largest_group_size = 8
-
----@alias builtinGroups
----| '"Vim"'
----| '"Quickfix"'
-
----@param disallow_list builtinGroups[]
-function M:filter_builtins(disallow_list)
-  local newlist = {}
-  for k, v in pairs(self.builtin) do
-    if v.group and not vim.tbl_contains(disallow_list, v.group) then newlist[k] = v end
-  end
-  self.builtin = newlist
-end
-
 function M:__filter_group(filter)
   local newlist = {}
   for _, v in ipairs(self.__mapped_actions) do
@@ -103,39 +46,6 @@ local function default_handler(v)
   elseif type(v.command) == 'function' then
     v.command()
   end
-end
-
-function M.__get_ordinal(action, opts)
-  if action.ordinal then
-    for k, v in pairs(action) do
-      if action.ordinal == k then action.ordinal = v end
-    end
-    return action.ordinal
-  end
-  if config.telescope.search_priority == nil then return action.name end
-  for i, v in ipairs(config.telescope.search_priority) do
-    if action[v] and v[i] ~= nil then return action[v] end
-  end
-  if config.telescope.fallback then return action[config.telescope.fallback] end
-end
-
-function M:__map_builtins()
-  local set_cmd = require('command_pal.utils').set_cmdline
-  local builtin = {}
-  for k, v in pairs(self.builtin) do
-    if v.group == nil then v.group = 'Vim' end
-    if type(v.command) == 'boolean' and v.command == true then
-      v.command = set_cmd(k .. ' ')
-    else
-      v.command = k
-    end
-    v.cmd_str = ''
-    if type(v.command) == 'string' then v.cmd_str = v.command end
-    v.handler = default_handler
-    v.ordinal = M.__get_ordinal(v)
-    builtin[k] = v
-  end
-  return builtin
 end
 
 -- sort by search_priority
@@ -159,64 +69,7 @@ function M:__merge(...)
   end
 end
 
-function M:__map_usercommands()
-  local command_i = vim.api.nvim_get_commands({})
-  local set_cmd = require('command_pal.utils').set_cmdline
-  local usercommands = {}
-  for _, cmd in pairs(command_i) do
-    usercommands[cmd.name] = {
-      name = cmd.name,
-      desc = cmd.definition,
-      group = 'User',
-      command = cmd.name,
-      cmd_str = cmd.definition or '',
-      ordinal = M.__get_ordinal(cmd),
-      handler = (function()
-        if cmd.nargs and cmd.nargs == '+' then return set_cmd(cmd.name .. ' ') end
-        return default_handler
-      end)(),
-    }
-  end
-  return usercommands
-end
-
----@param item CommandPaletteItem
-function M.new_item(item) table.insert(M.actions, item) end
-
-function M:__map_actions()
-  local acts = {}
-  if config.actions == nil then return end
-  for _, v in ipairs(config.actions) do
-    if not v.group then
-      v.group = 'Default'
-    elseif #v.group > M.__largest_group_size then
-      M.__largest_group_size = #v.group
-    end
-    v.command_str = ''
-    if type(v.command) == 'string' then v.command_str = v.command end
-    v.ordinal = M.__get_ordinal(v)
-    v.handler = function()
-      if type(v.command) == 'string' then vim.cmd(v.command) end
-      if type(v.command) == 'function' then v.command() end
-    end
-    acts[v.name] = v
-  end
-  return acts
-end
-
-function M:__map_overrides()
-  local overrides = config.builtin.override() or {}
-  for _, v in pairs(overrides) do
-    if not v.command_str then
-      if type(v.command) == 'string' then v.command_str = v.command end
-    end
-    v.ordinal = v.ordinal or M.__get_ordinal(v)
-    v.handler = v.handler or default_handler
-  end
-  return overrides
-end
-
----@param opts PickerOpts
+---@param opts CommandPalConfig
 function M.__command_displayer(opts)
   local displayer = entry_display.create({
     separator = ' ',
@@ -237,10 +90,6 @@ function M.__command_displayer(opts)
   end
 
   return function(entry)
-    if opts.search_for then
-      -- TODO: Validate ordinal
-      entry.ordinal = M.__get_ordinal(entry.ordinal)
-    end
     return utils.make_entry.set_default_entry_mt({
       name = entry.name,
       handler = entry.handler,
@@ -255,40 +104,23 @@ function M.__command_displayer(opts)
   end
 end
 
----@class PickerOpts
----@field search_for? Oridnals
----@field filter_group? table<string>
-
----@param opts PickerOpts
-function M.open_picker(opts)
-  if not M.merged then
-    local acts = M:__map_actions()
-    local builtin = M:__map_builtins()
-    -- TODO: Autocommand to update on new commands?
-    local user = M:__map_usercommands()
-    local overrides = M:__map_overrides()
-    M:__merge(builtin, overrides, user, acts)
-    M.merged = true
+function M:__merge_palette(opts)
+  if not self.merged then
+    local builtin = require('command_pal.providers.builtin'):__map_builtins(opts)
+    local user = require('command_pal.providers.commands').map_usercommands(opts)
+    local overrides = require('command_pal.providers.builtin'):__map_overrides(opts)
+    self:__merge(builtin, user, overrides)
+    self.merged = true
   end
-  opts = opts or {}
-  require('telescope.pickers')
-    .new(opts, {
-      prompt_title = 'Command Palette',
-      finder = require('telescope.finders').new_table({
-        results = opts.filter_group ~= nil and M:__filter_group(opts.filter_group) or M.__mapped_actions,
-        entry_maker = M.__command_displayer(opts),
-      }),
-      sorter = conf.generic_sorter(opts),
-      attach_mappings = function(prompt_bufnr, _)
-        actions.select_default:replace(function()
-          actions.close(prompt_bufnr)
-          local entry = action_state.get_selected_entry().value
-          entry:handler()
-        end)
-        return true
-      end,
-    })
-    :find()
+end
+
+---@param opts CommandPalConfig
+function M.open_picker(opts)
+  M:__merge_palette(opts)
+  require('command_pal.pickers').picker_pick(
+    opts,
+    opts.filter_group ~= nil and M:__filter_group(opts.filter_group) or M.__mapped_actions
+  )
 end
 
 return M
