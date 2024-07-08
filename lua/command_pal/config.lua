@@ -78,35 +78,19 @@ H.default = {
   },
 }
 
-function M.setup(config)
+function M:setup(config)
   config = H.setup_config(config)
-  M.config = config
+  self.config = config
 end
 
 function H.setup_config(config)
-  vim.validate({
-    config = {
-      config,
-      'table',
-      true,
-    },
-  })
-
   config = vim.tbl_deep_extend('force', vim.deepcopy(H.default), config or {})
   return config
 end
 
-function M.merge_opts(opts)
-  vim.validate({
-    config = {
-      opts,
-      'table',
-      true,
-    },
-  })
-
-  opts = vim.tbl_deep_extend('force', M.config, opts or {})
-  return opts
+function M:merge_opts(opts)
+  local new = vim.tbl_deep_extend('force', vim.deepcopy(self.config), opts or {})
+  return new
 end
 
 return M

@@ -23,10 +23,10 @@ M.builtin = {
   ['wq!'] = { name = 'Write Quit Force', desc = 'Write buffer and force quit', bang = true },
   wqa = { name = 'Write Quit All', desc = 'Write all buffers and quit' },
   ['wqa!'] = { name = 'Write Quit All force', desc = 'Write all buffers and fore quit', bang = true },
-  q = { name = 'Write Quit', desc = 'Write buffer and quit' },
-  ['q!'] = { name = 'Write Quit Force', desc = 'Write buffer and force quit', bang = true },
-  qa = { name = 'Write Quit All', desc = 'Write all buffers and quit' },
-  ['qa!'] = { name = 'Write Quit All', desc = 'Write all buffers and force quit', bang = true },
+  q = { name = 'Quit', desc = 'Quit the current buffer. If it is the last, exit nvim' },
+  ['q!'] = { name = 'Quit Force', desc = 'Force Quit the current buffer, and exit nvim' },
+  qa = { name = 'Quit All', desc = 'Quit all the buffers and leave if all quits were successful' },
+  ['qa!'] = { name = 'Quit All Force', desc = 'Force Quit all buffers and leave nvim ' },
   set = { name = 'Set Option', desc = 'Toggle or vim set option', command = true },
   colorscheme = { name = 'Set Colorscheme', desc = 'Set Colorscheme', command = true },
   nohighlights = { name = 'No Highlight', desc = 'Remove highlights from search commands' },
@@ -50,7 +50,9 @@ function M:__map_builtins(opts)
   for k, v in pairs(self.builtin) do
     if not v.bang and opts.builtin.bang == false then
       builtin[k] = {
+        name = v.name,
         group = v.group or 'Vim',
+        desc = v.desc,
         command = (function()
           if type(v.command) == 'boolean' and v.command then
             return set_cmd(k .. ' ')

@@ -1,7 +1,7 @@
 local M = {
   picker_lookup = {
     'telescope',
-    'mini.pick',
+    'mini_pick',
     'fzf-lua',
   },
 }

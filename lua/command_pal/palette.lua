@@ -79,7 +79,7 @@ function M:get_palette(opts)
   if self.__cache[key] then return self.__cache[key] end
 
   local mapped_actions = self:__merge_palette(opts)
-  self.__cache[key] = vim.deepcopy(mapped_actions)
+  self.__cache[key] = mapped_actions
   return mapped_actions
 end
 
@@ -98,6 +98,8 @@ if M.has_lazy then
   vim.api.nvim_create_autocmd('User', {
     pattern = 'LazyLoad',
     callback = vim.schedule_wrap(M.update_palette),
+    desc = 'Updates Command-Pal when a plugin has been loaded for lazy.nvim',
+    group = vim.api.nvim_create_augroup('Command-Pal', { clear = true }),
   })
 end
 
