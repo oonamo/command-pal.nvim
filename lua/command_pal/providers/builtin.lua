@@ -1,4 +1,7 @@
 local M = {}
+local get_ordinal = require('command_pal.ordinal').get_ordinal
+local default_handler = require('command_pal.handler').default_handler
+local set_cmd = require('command_pal.utils').set_cmdline
 
 ---@class builtin.Value
 ---@field name string
@@ -36,43 +39,9 @@ M.builtin = {
   },
 }
 
----@param v builtin.Value
-local function default_handler(v)
-  if type(v.command) == 'string' then
-    vim.cmd(v.command)
-  elseif type(v.command) == 'function' then
-    v.command()
-  end
-end
-
---- checks for ordinal = "desc" and the such
---- returs itself if it does not find key
---- if no oridnal is set, it uses the opts.search_for.priorities to
---- set value
----@param action builtin.Value
----@param opts CommandPalConfig
----
----@return string
-local function get_ordinal(action, opts)
-  if action.ordinal then
-    for k, v in pairs(action) do
-      if action.ordinal == k then action.ordinal = v end
-    end
-    return action.ordinal
-  end
-
-  for _, v in ipairs(opts.search_for.priorities) do
-    if action[v] then return action[v] end
-  end
-  -- default to name
-
-  return action.name
-end
-
 ---@param opts CommandPalConfig
 ---@return palette.MappedAction
 function M:__map_builtins(opts)
-  local set_cmd = require('command_pal.utils').set_cmdline
   local builtin = {}
 
   for k, v in pairs(self.builtin) do
@@ -95,18 +64,6 @@ function M:__map_builtins(opts)
   return builtin
 end
 
----@param opts CommandPalConfig
----@return palette.MappedAction
-function M:__map_overrides(opts)
-  local overrides = opts.builtin.override() or {}
-  for _, v in pairs(overrides) do
-    if not v.cmd_str then
-      if type(v.command) == 'string' then v.cmd_str = v.command end
-    end
-    v.ordinal = get_ordinal(v, opts)
-    v.handler = v.handler or default_handler
-  end
-  return overrides
-end
+function M.get_items(opts) return M:__map_builtins(opts) end
 
 return M

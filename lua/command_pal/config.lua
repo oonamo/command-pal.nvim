@@ -33,8 +33,19 @@ local M = {}
 ---@field override fun()
 ---@field bang boolean
 
+---@class config.UserAction
+---@field name? string
+---@field desc string
+---@field group? string
+---@field ordinal? string
+---@field command? string
+
+---@class config.UserActions
+---@field [string] config.UserAction
+
 ---@class CommandPalConfig
----@field actions CommandPaletteItem[]
+---@field default_group string
+---@field actions config.UserActions
 ---@field builtin BuiltinOpts
 ---@field telescope CommandPalTelescopeOpts
 ---@field search_for config.SearchFor
@@ -43,6 +54,7 @@ local M = {}
 
 ---@type CommandPalConfig
 H.default = {
+  default_group = 'UserAction',
   picker = 'telescope',
   search_for = {
     priorities = { 'name', 'command', 'desc', 'keymap' },

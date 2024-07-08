@@ -2,37 +2,9 @@ local M = {
   group = 'User',
 }
 
---- checks for ordinal = "desc" and the such
---- returs itself if it does not find key
---- if no oridnal is set, it uses the opts.search_for.priorities to
---- set value
----@param action builtin.Value
----@param opts CommandPalConfig
----
----@return string
-local function get_ordinal(action, opts)
-  if action.ordinal then
-    for k, v in pairs(action) do
-      if action.ordinal == k then action.ordinal = v end
-    end
-    return action.ordinal
-  end
-
-  for _, v in ipairs(opts.search_for.priorities) do
-    if action[v] then return action[v] end
-  end
-  -- default to name
-
-  return action.name
-end
-
-local function default_handler(v)
-  if type(v.command) == 'string' then
-    vim.cmd(v.command)
-  elseif type(v.command) == 'function' then
-    v.command()
-  end
-end
+local get_ordinal = require('command_pal.ordinal').get_ordinal
+local default_handler = require('command_pal.handler').default_handler
+local set_cmd = require('command_pal.utils').set_cmdline
 
 ---@class commands.CommandT
 
@@ -44,7 +16,6 @@ function M.map_usercommands(opts)
   if vim.tbl_contains(opts.filter_group, M.group) then return usercommands end
 
   local command_i = vim.api.nvim_get_commands({})
-  local set_cmd = require('command_pal.utils').set_cmdline
   for _, cmd in pairs(command_i) do
     usercommands[cmd.name] = {
       name = cmd.name,
@@ -61,5 +32,7 @@ function M.map_usercommands(opts)
   end
   return usercommands
 end
+
+function M.get_items(opts) return M.map_usercommands(opts) end
 
 return M

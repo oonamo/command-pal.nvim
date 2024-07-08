@@ -26,10 +26,6 @@ function M.__command_displayer(opts)
   end
 
   return function(entry)
-    -- if opts.search_for then
-    --   -- TODO: Validate ordinal
-    --   entry.ordinal = M.__get_ordinal(entry.ordinal)
-    -- end
     return utils.make_entry.set_default_entry_mt({
       name = entry.name,
       handler = entry.handler,
@@ -44,9 +40,12 @@ function M.__command_displayer(opts)
   end
 end
 
+---Picks using Telescope
+---@param opts CommandPalConfig
+---@param results palette.MappedAction
 function M.pick(opts, results)
   require('telescope.pickers')
-    .new(opts, {
+    .new(opts.telescope.opts, {
       prompt_title = 'Command Palette',
       finder = require('telescope.finders').new_table({
         results = results,
