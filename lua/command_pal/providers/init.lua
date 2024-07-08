@@ -1,5 +1,8 @@
 local M = {}
 
+---@class provider.Base
+---@field get_items fun(opts: CommandPalConfig): palette.MappedAction
+
 -- TODO: Make this the priority list
 local providers = {
   'actions',

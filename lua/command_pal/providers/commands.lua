@@ -1,3 +1,5 @@
+---@class provider.Commands : provider.Base
+---@field group string
 local M = {
   group = 'User',
 }

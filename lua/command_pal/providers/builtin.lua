@@ -1,7 +1,10 @@
-local M = {}
 local get_ordinal = require('command_pal.ordinal').get_ordinal
 local default_handler = require('command_pal.handler').default_handler
 local set_cmd = require('command_pal.utils').set_cmdline
+
+---@class provider.Builtin : provider.Base
+---@field builtin builtin.BuiltinT
+local M = {}
 
 ---@class builtin.Value
 ---@field name string
@@ -13,7 +16,6 @@ local set_cmd = require('command_pal.utils').set_cmdline
 ---@class builtin.BuiltinT
 ---@field [string] builtin.Value
 
----@type builtin.BuiltinT
 M.builtin = {
   w = { name = 'Write', desc = 'Write the whole buffer to the current file.' },
   ['w!'] = { name = 'Write Force', desc = 'Forcefully Write the whole buffer to the current file.', bang = true },

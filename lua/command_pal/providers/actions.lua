@@ -1,9 +1,10 @@
 local get_ordinal = require('command_pal.ordinal').get_ordinal
 local default_handler = require('command_pal.handler').default_handler
+
+---@class provider.Actions : provider.Base
+---@field __map_actions fun(opts: CommandPalConfig): palette.MappedAction
 local M = {}
 
----@param opts CommandPalConfig
----@return palette.MappedAction
 function M.__map_actions(opts)
   local actions = opts.actions
   for k, v in pairs(actions) do
