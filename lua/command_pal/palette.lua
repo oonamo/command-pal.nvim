@@ -64,7 +64,7 @@ end
 ---@param opts CommandPalConfig
 function M:__merge_palette(opts)
   if not self.merged then
-    self:__merge(unpack(require('command_pal.providers.init').get_palette_items(opts)))
+    self:__merge(unpack(require('command_pal.providers').get_palette_items(opts)))
     self.merged = true
   end
 end
