@@ -10,6 +10,21 @@ local function pad_str(str, len)
   return str
 end
 
+local display_lines = {
+  'desc',
+  'name',
+  'group',
+  'cmd_str',
+}
+
+local function previewer(buf_id, item)
+  local display = {}
+  for _, v in ipairs(display_lines) do
+    if item[v] then table.insert(display, v .. ': ' .. item[v]) end
+  end
+  vim.api.nvim_buf_set_lines(buf_id, 0, -1, false, display)
+end
+
 -- TODO: mini.pick is fast, but would a cache be need at a certain size?
 local function entry_display(opts)
   local max_width = vim.o.columns
@@ -35,14 +50,21 @@ local function entry_display(opts)
     for i, v in ipairs(compiled_width) do
       comp_str = comp_str .. pad_str(entry[i], v) .. (opts.separator or ' ')
     end
-    return { text = comp_str, handler = entry.handler, command = entry.command }
+    return {
+      text = comp_str,
+      name = entry.name,
+      handler = entry.handler,
+      command = entry.command,
+      desc = entry.desc,
+      cmd_str = entry.cmd_str,
+    }
   end
 end
 
 local displayer = entry_display({
   items = {
     { width = 0.2 },
-    { width = 0.7 },
+    { width = 0.6 },
     { width = 10 },
   },
 })
@@ -53,8 +75,11 @@ local function format_item(item)
     item.desc,
     item.cmd_str,
     name = item.name,
+    desc = item.desc,
     handler = item.handler,
     command = item.command,
+    cmd_str = item.cmd_str,
+    item = item,
   })
 end
 
@@ -76,6 +101,7 @@ function M.pick(opts, results)
       choose = function(item)
         vim.schedule(function() item:handler() end)
       end,
+      preview = previewer,
     },
     window = {
       config = {
