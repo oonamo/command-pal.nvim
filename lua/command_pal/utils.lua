@@ -37,4 +37,21 @@ function M.make_entry.set_default_entry_mt(tbl, opts)
   })
 end
 
+M.cache = {}
+
+function M.cache.serialize(tbl)
+  local serialized = ''
+  for k, v in pairs(tbl) do
+    serialized = serialized .. tostring(k)
+    if type(v) == 'function' then
+      serialized = serialized .. ':f'
+    elseif type(v) == 'table' then
+      serialized = serialized .. ':' .. M.cache.serialize(v)
+    else
+      serialized = serialized .. ':' .. tostring(v)
+    end
+  end
+  return serialized
+end
+
 return M
