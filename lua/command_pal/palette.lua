@@ -12,6 +12,7 @@
 -- ---@tag command-pal.command-palette.specification
 -- mod def
 local M = {}
+M.has_lazy, _ = pcall(require, 'lazy')
 
 local utils = require('command_pal.utils')
 
@@ -82,6 +83,8 @@ function M:get_palette(opts)
   return mapped_actions
 end
 
+function M.update_palette() M.__cache = {} end
+
 ---@param opts CommandPalConfig
 function M.open_picker(opts)
   local actions = M:get_palette(opts)
@@ -89,6 +92,13 @@ function M.open_picker(opts)
     opts,
     opts.filter_group ~= nil and M:__filter_group(opts.filter_group, actions) or actions
   )
+end
+
+if M.has_lazy then
+  vim.api.nvim_create_autocmd('User', {
+    pattern = 'LazyLoad',
+    callback = vim.schedule_wrap(M.update_palette),
+  })
 end
 
 return M
