@@ -1,6 +1,6 @@
 local M = {}
 
-local has_pick, minipick = pcall(require, 'mini.pick')
+local _, minipick = pcall(require, 'mini.pick')
 
 local function pad_str(str, len)
   str = str or ''
@@ -10,10 +10,12 @@ local function pad_str(str, len)
   return str
 end
 
+-- TODO: mini.pick is fast, but would a cache be need at a certain size?
 local function entry_display(opts)
   local max_width = vim.o.columns
   local compiled_width = {}
   local total = 0
+
   for i, v in ipairs(opts.items) do
     if v.width < 1 then
       local result = math.floor(v.width * max_width)
@@ -25,6 +27,7 @@ local function entry_display(opts)
       compiled_width[i] = result
     end
   end
+
   compiled_width[#compiled_width + 1] = max_width - total
 
   return function(entry)

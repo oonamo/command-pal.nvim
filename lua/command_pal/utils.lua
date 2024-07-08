@@ -54,4 +54,23 @@ function M.cache.serialize(tbl)
   return serialized
 end
 
+function M.defaulter(f, default_opts, conf)
+  default_opts = default_opts or {}
+  return {
+    new = function(opts)
+      if conf.preview == false and not opts.preview then return false end
+      opts.preview = type(opts.preview) ~= 'table' and {} or opts.preview
+      if type(conf.preview) == 'table' then
+        for k, v in pairs(conf.preview) do
+          opts.preview[k] = vim.F.if_nil(opts.preview[k], v)
+        end
+      end
+      return f(opts)
+    end,
+    __call = function()
+      local ok, err = pcall(f(default_opts))
+      if not ok then error(debug.traceback(err)) end
+    end,
+  }
+end
 return M
