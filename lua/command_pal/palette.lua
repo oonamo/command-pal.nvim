@@ -71,15 +71,10 @@ function M:__merge_palette(opts) return self:__merge(unpack(require('command_pal
 function M:get_palette(opts)
   self.__cache = self.__cache or {}
   local key = utils.cache.serialize(opts)
-  print(key)
-  if self.__cache[key] then
-    vim.notify('found cached key')
-    return self.__cache[key]
-  end
+  if self.__cache[key] then return self.__cache[key] end
 
   local mapped_actions = self:__merge_palette(opts)
   self.__cache[key] = mapped_actions
-  vim.notify('caching key')
 
   return mapped_actions
 end
