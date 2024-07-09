@@ -27,13 +27,18 @@ end
 
 -- TODO: mini.pick is fast, but would a cache be need at a certain size?
 local function entry_display(opts)
-  local max_width = vim.o.columns
+  local width = 0
+  if M.ivy then
+    width = vim.o.columns
+  else
+    width = minipick.config.window.height or math.floor(vim.o.columns * 0.618)
+  end
   local compiled_width = {}
   local total = 0
 
   for i, v in ipairs(opts.items) do
     if v.width < 1 then
-      local result = math.floor(v.width * max_width)
+      local result = math.floor(v.width * width)
       total = total + result
       compiled_width[i] = result
     else
@@ -43,7 +48,7 @@ local function entry_display(opts)
     end
   end
 
-  compiled_width[#compiled_width + 1] = max_width - total
+  compiled_width[#compiled_width + 1] = (width or vim.o.columns) - total
 
   return function(entry)
     local comp_str = ''
@@ -92,7 +97,6 @@ end
 ---@param opts CommandPalConfig
 local function get_ivy_theme(opts)
   if opts.mini_pick then
-    M.max_width = vim.o.columns
     return {
       config = {
         width = vim.o.columns,
@@ -113,6 +117,13 @@ end
 ---@param opts CommandPalConfig
 ---@param results palette.MappedAction
 function M.pick(opts, results)
+  if opts.mini_pick.ivy_style then
+    M.ivy = true
+  else
+    -- M.max_width = require('mini.pick').config.window.height or math.floor(vim.o.columns * 0.618)
+  end
+
+  vim.print(M)
   minipick.start({
     source = {
       name = opts.mini_pick.title,
