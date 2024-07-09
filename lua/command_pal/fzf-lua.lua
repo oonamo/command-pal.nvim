@@ -113,15 +113,22 @@ get_inverse_hl()
 local _, _, f = futils.ansi_from_hl('CommandPalNormalHideFzf')
 
 local function transparent(str)
-  if str == nil or #str == 0 then return '' end
+  -- if str == nil or #str == 0 then return '' end
   return f(str)
 end
 
 local function get_contents(fzf_cb)
-  for i, v in ipairs(M.entries) do
-    fzf_cb(transparent(pad_str(tostring(i) .. ':')) .. futils.ansi_codes.magenta(v.name))
-  end
-  fzf_cb()
+  coroutine.wrap(function()
+    local co = coroutine.running()
+    for i, v in ipairs(M.entries) do
+      fzf_cb(
+        transparent(pad_str(tostring(i) .. ':')) .. futils.ansi_codes.magenta(v.name),
+        function() coroutine.resume(co) end
+      )
+      coroutine.yield()
+    end
+    fzf_cb()
+  end)()
 end
 
 function M.pick(opts, results)
@@ -148,7 +155,7 @@ function M.pick(opts, results)
           wrap = 'nowrap',
           hidden = 'nohidden',
           vertical = 'down:45%',
-          horizontal = 'right:70%',
+          horizontal = 'right:30%',
           layout = 'horizontal',
           title = true,
           title_align = 'center',

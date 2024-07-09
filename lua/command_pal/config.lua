@@ -23,11 +23,8 @@ local M = {}
 ---@field priorities string[]
 
 ---@class CommandPalTelescopeOpts
----@field title string
----@field sorter? fun(any)
 ---@field opts table
----@field fallback string
----@field keymaps table
+---@field ivy_style boolean
 
 ---@class BuiltinOpts
 ---@field override fun()
@@ -61,15 +58,17 @@ H.default = {
   },
   filter_group = {},
   telescope = {
+    ivy_style = true,
     opts = {},
-    title = 'Command Palette',
-    -- actually is require("telescope.conf").values.generic_sorter
-    sorter = nil,
-    fallback = 'name',
-    keymaps = {
-      ['default'] = nil,
-      ['<C-y>'] = nil,
-    },
+  },
+  mini_pick = {
+    ivy_style = true,
+    opts = {},
+  },
+  fzf_lua = {
+    ivy_style = true,
+    hide_nunber = false,
+    opts = {},
   },
   actions = {},
   builtin = {
