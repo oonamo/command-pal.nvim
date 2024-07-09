@@ -40,6 +40,11 @@ local M = {}
 ---@class config.UserActions
 ---@field [string] config.UserAction
 
+---@class config.MiniPick
+---@field title string
+---@field ivy_style boolean
+---@field opts table
+
 ---@class CommandPalConfig
 ---@field default_group string
 ---@field actions config.UserActions
@@ -48,6 +53,7 @@ local M = {}
 ---@field search_for config.SearchFor
 ---@field filter_group string[]
 ---@field picker string
+---@field mini_pick config.MiniPick
 
 ---@type CommandPalConfig
 H.default = {
@@ -64,6 +70,7 @@ H.default = {
   mini_pick = {
     ivy_style = true,
     opts = {},
+    title = 'Command Palette',
   },
   fzf_lua = {
     ivy_style = true,

@@ -88,7 +88,26 @@ local function get_items(results)
   items = vim.tbl_map(format_item, results)
   return items
 end
--- if not has_pick then vim.notify('Command-pal picker mini.pick is not available') end
+
+---@param opts CommandPalConfig
+local function get_ivy_theme(opts)
+  if opts.mini_pick then
+    M.max_width = vim.o.columns
+    return {
+      config = {
+        width = vim.o.columns,
+        height = math.floor(vim.o.lines * 0.3),
+      },
+    }
+  end
+  return {}
+end
+
+---@param opts CommandPalConfig
+local function get_minipick_win_opts(opts)
+  local ivy = get_ivy_theme(opts)
+  return vim.tbl_deep_extend('force', opts.mini_pick.opts, ivy)
+end
 
 ---Picks using MiniNvim
 ---@param opts CommandPalConfig
@@ -96,19 +115,14 @@ end
 function M.pick(opts, results)
   minipick.start({
     source = {
-      name = opts.telescope.title,
+      name = opts.mini_pick.title,
       items = get_items(results),
       choose = function(item)
         vim.schedule(function() item:handler() end)
       end,
       preview = previewer,
     },
-    window = {
-      config = {
-        width = vim.o.columns,
-        height = math.floor(vim.o.lines * 0.3),
-      },
-    },
+    window = get_minipick_win_opts(opts),
   })
 end
 
