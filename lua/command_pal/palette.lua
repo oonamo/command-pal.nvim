@@ -8,6 +8,8 @@
 
 ---@class CommandPalette
 ---@field __mapped_actions palette.MappedAction[]
+---@field __serialize fun(self): nil
+---@field get_serialized fun(self): string
 
 -- ---@tag command-pal.command-palette.specification
 -- mod def

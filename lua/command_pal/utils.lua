@@ -73,4 +73,13 @@ function M.defaulter(f, default_opts, conf)
     end,
   }
 end
+
+-- HACK: Precision is not needed
+function M.get_digit_len(digit)
+  if digit < 0 then return M.get_digit_len(math.abs(digit)) end
+  if digit < 10 then return 1 end
+  if digit < 100 then return 2 end
+  if digit < 1000 then return 3 end
+end
+
 return M

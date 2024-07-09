@@ -106,6 +106,7 @@ function M.pick(opts, results)
     window = {
       config = {
         width = vim.o.columns,
+        height = math.floor(vim.o.lines * 0.3),
       },
     },
   })
