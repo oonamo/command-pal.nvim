@@ -9,7 +9,7 @@ H.opts = {
   items = {
     { width = 0.2 },
     { width = 0.6 },
-    { width = 10 },
+    { width = 10, remaining = true },
   },
 }
 
@@ -39,7 +39,7 @@ function H.calculate_widths(opts)
       compiled_width[i] = result
     end
   end
-  table.insert(compiled_width, (H.width or vim.o.columns) - total)
+  if opts.items[#opts.items].remaining then compiled_width[#compiled_width] = (H.width or vim.o.columns) - total end
   return compiled_width
 end
 
@@ -69,11 +69,10 @@ end
 -- TODO: mini.pick is fast, but would a cache be need at a certain size?
 local function entry_display(opts)
   H.compiled_width = H.calculate_widths(opts)
-  -- TODO: Refresh calculated width after a resize
   return function(entry)
     local comp_str = ''
     for i, v in ipairs(H.compiled_width) do
-      comp_str = comp_str .. pad_str(entry[i], v) .. (opts.separator or ' ')
+      if entry[i] then comp_str = comp_str .. pad_str(entry[i], v) .. (opts.separator or ' ') end
     end
     return {
       text = comp_str,
@@ -104,12 +103,14 @@ end
 
 local function get_items(results)
   local items = {}
-  items = vim.tbl_map(format_item, results)
+  for k, v in pairs(results) do
+    items[k] = format_item(v)
+  end
   return items
 end
 
 local function get_ivy_theme()
-  if M.opts.mini_pick then
+  if M.ivy then
     return {
       config = {
         width = vim.o.columns,
@@ -130,12 +131,14 @@ end
 ---@param results palette.MappedAction
 function M.pick(opts, results)
   M.opts = opts
-  if opts.mini_pick.ivy_style then M.ivy = true end
+  M.ivy = true
+  if opts.mini_pick.ivy_style == false then M.ivy = false end
   minipick.start({
     source = {
       name = opts.mini_pick.title,
       items = get_items(results),
       choose = function(item)
+        -- FIXME: might be better to use pick's api for making sure the window is closed
         vim.schedule(function() item:handler() end)
       end,
       preview = previewer,

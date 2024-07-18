@@ -87,13 +87,13 @@ H.default = {
     'builtin',
     'commands',
     'overrides',
-    {
-      name = 'something',
-      get_items = function(opts) end,
-    },
-    {
-      spec = 'user.custom.my_special_actions',
-    },
+    -- {
+    --   name = 'something',
+    --   get_items = function(opts) end,
+    -- },
+    -- {
+    --   spec = 'user.custom.my_special_actions',
+    -- },
     -- TODO: How to do something like this?
     -- 'user.custom.my_special_actions'
   },
