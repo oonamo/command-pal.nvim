@@ -9,6 +9,13 @@ function M.set_cmdline(key)
   end
 end
 
+-- From mini.extras
+M.ensure_text_width = function(text, width)
+  local text_width = vim.fn.strchars(text)
+  if text_width <= width then return string.rep(' ', width - text_width) .. text end
+  return '…' .. vim.fn.strcharpart(text, text_width - width + 1, width - 1)
+end
+
 --- HACK: Copy code from Tel;escope to not require unneeded modules
 --- FROM: https://github.com/nvim-telescope/telescope.nvim/blob/bfcc7d5c6f12209139f175e6123a7b7de6d9c18a/lua/telescope/make_entry.lua
 local handle_entry_index = function(opts, t, k)
