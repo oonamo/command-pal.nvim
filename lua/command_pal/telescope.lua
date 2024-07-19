@@ -44,6 +44,9 @@ end
 local function get_ivy_theme()
   return require('telescope.themes').get_ivy({
     layout_config = { height = 0.3 },
+    preview = {
+      hide_on_startup = true,
+    },
   })
 end
 
