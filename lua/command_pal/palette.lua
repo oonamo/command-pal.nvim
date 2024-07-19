@@ -62,6 +62,7 @@ function M:__merge(...)
       command = v.command,
       ordinal = v.ordinal,
       handler = v.handler,
+      keymap = v.keymap,
     })
   end
   return mapped_actions

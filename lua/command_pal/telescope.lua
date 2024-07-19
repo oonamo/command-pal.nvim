@@ -20,12 +20,16 @@ function M.__command_displayer(opts)
   local make_display = function(entry)
     local col1 = entry.name
     local name_hl = {}
-    -- TODO: Do the same for commands mapped to a keymap
-    if entry.cmd_str and #entry.cmd_str < opts.max_command_len and opts.telescope.show_command then
+    if entry.keymap and entry.keymap ~= '' and opts.telescope.show_key then
+      local hl_start = #entry.name + 1
+      local hl_end = hl_start + #entry.keymap + 2
+      table.insert(name_hl, { { hl_start, hl_end }, 'TelescopeResultsConstant' })
+      col1 = col1 .. ' (' .. entry.keymap .. ')'
+    elseif entry.cmd_str and #entry.cmd_str < opts.max_command_len and opts.telescope.show_command then
       local hl_start = #entry.name + 1
       local hl_end = hl_start + #entry.cmd_str + 2
       table.insert(name_hl, { { hl_start, hl_end }, 'TelescopeResultsFunction' })
-      col1 = col1 .. ' <' .. entry.cmd_str .. '>'
+      col1 = col1 .. ' (' .. entry.cmd_str .. ')'
     end
 
     local res, hls = displayer({
@@ -44,6 +48,7 @@ function M.__command_displayer(opts)
       desc = entry.desc,
       definition = entry.definition,
       cmd_str = entry.cmd_str,
+      keymap = entry.keymap,
       --
       value = entry,
       ordinal = entry.ordinal,
