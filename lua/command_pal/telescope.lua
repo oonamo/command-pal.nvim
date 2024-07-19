@@ -12,18 +12,29 @@ function M.__command_displayer(opts)
     separator = ' ',
     items = {
       { width = 0.2 },
-      { width = 0.7 },
-      { width = 10 },
+      { width = 0.8 },
       { remaining = true },
     },
   })
 
   local make_display = function(entry)
-    return displayer({
-      entry.name,
+    local col1 = entry.name
+    local name_hl = {}
+    -- TODO: Do the same for commands mapped to a keymap
+    if entry.cmd_str and #entry.cmd_str < opts.max_command_len and opts.telescope.show_command then
+      local hl_start = #entry.name + 1
+      local hl_end = hl_start + #entry.cmd_str + 2
+      table.insert(name_hl, { { hl_start, hl_end }, 'TelescopeResultsFunction' })
+      col1 = col1 .. ' <' .. entry.cmd_str .. '>'
+    end
+
+    local res, hls = displayer({
+      col1,
       { entry.desc, 'TelescopeResultsComment' },
-      entry.cmd_str,
     })
+
+    if name_hl[1] ~= nil then table.insert(hls, name_hl[1]) end
+    return res, hls
   end
 
   return function(entry)

@@ -11,6 +11,12 @@
 --- # Priorities
 ---
 
+---@class config.PickerOpts
+---@field ivy_style boolean
+---@field show_command boolean
+---@field show_key boolean
+---@field opts table
+
 local H = {}
 local M = {}
 --- # Setup
@@ -22,9 +28,7 @@ local M = {}
 ---@class config.SearchFor
 ---@field priorities string[]
 
----@class CommandPalTelescopeOpts
----@field opts table
----@field ivy_style boolean
+---@class CommandPalTelescopeOpts : config.PickerOpts
 
 ---@class BuiltinOpts
 ---@field override fun()
@@ -40,10 +44,8 @@ local M = {}
 ---@class config.UserActions
 ---@field [string] config.UserAction
 
----@class config.MiniPick
+---@class config.MiniPick : config.PickerOpts
 ---@field title string
----@field ivy_style boolean
----@field opts table
 
 ---@class CommandPalConfig
 ---@field default_group string
@@ -54,27 +56,35 @@ local M = {}
 ---@field filter_group string[]
 ---@field picker string
 ---@field mini_pick config.MiniPick
+---@field max_command_len number
 
 ---@type CommandPalConfig
 H.default = {
   default_group = 'UserAction',
   picker = 'telescope',
+  max_command_len = 10,
   search_for = {
     priorities = { 'name', 'command', 'desc', 'keymap' },
   },
   filter_group = {},
   telescope = {
     ivy_style = true,
+    show_command = true,
+    show_key = true,
     opts = {},
   },
   mini_pick = {
     ivy_style = true,
+    show_command = true,
+    show_key = true,
     opts = {},
     title = 'Command Palette',
   },
   fzf_lua = {
     ivy_style = true,
     hide_nunber = false,
+    show_command = true,
+    show_key = true,
     opts = {},
   },
   actions = {},
