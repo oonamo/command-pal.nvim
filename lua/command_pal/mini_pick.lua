@@ -119,6 +119,7 @@ local function get_items(results)
   for k, v in pairs(results) do
     items[k] = format_item(v)
   end
+  vim.print(items)
   return items
 end
 
