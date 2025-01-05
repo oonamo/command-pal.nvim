@@ -689,6 +689,7 @@ local commands = {
 
 ---@param opts CommandPalConfig
 function M:__override_builtins(opts)
+  commands = vim.tbl_deep_extend('force', commands, opts.builtin.commands or {})
   for _, v in ipairs(commands) do
     self.builtin[':' .. v].command = true
   end
