@@ -33,6 +33,7 @@ local M = {}
 ---@class BuiltinOpts
 ---@field override fun()
 ---@field bang boolean
+---@field commands string[]
 
 ---@class config.UserAction
 ---@field name? string
@@ -91,6 +92,7 @@ H.default = {
   builtin = {
     override = function() end,
     bang = false,
+    commands = {},
   },
   providers = {
     'actions',
