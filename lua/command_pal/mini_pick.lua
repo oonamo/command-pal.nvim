@@ -9,11 +9,12 @@ H.opts = {
   items = {
     { width = 0.3 },
     { width = 0.7 },
-    { width = 10, remaining = true },
+    -- { width = 10, remaining = true },
   },
   order = {
     'text',
     'keymap',
+    'desc',
   },
 }
 
@@ -53,7 +54,7 @@ function H.calculate_widths(opts)
 end
 
 local function pad_str(str, len)
-  if str and #str > len then return str:sub(0, len - 2) .. '...' end
+  if str and #str > len then return str:sub(0, len - 3) .. '...' end
   str = str or ''
   for _ = 0, (len - #str) do
     str = str .. ' '
@@ -83,9 +84,27 @@ local function entry_display(opts)
     for i, v in ipairs(H.compiled_width) do
       if entry[i] then comp_str = comp_str .. pad_str(entry[i], v) .. (opts.separator or ' ') end
     end
+    local text
+    if entry.name and entry.name ~= '' then
+      text = utils.func_to_str(entry.name)
+    elseif entry.command and entry.command ~= '' then
+      text = utils.func_to_str(entry.command)
+    elseif entry.cmd_str and entry.cmd_str ~= '' then
+      text = utils.func_to_str(entry.cmd_str)
+    else
+      text = 'NULL'
+    end
+    print(text)
+    -- local text = entry.command
+    -- if not entry.command or not entry.name or not entry.command or not entry.cmd_str then
+    --     vim.print(entry)
+    -- end
+    -- if not entry.text then
+    --   entry.text = entry[1] or ""
+    -- end
     return {
-      text = entry.command or entry.name or entry.command or entry.cmd_str,
-      -- text = comp_str,
+      -- text = entry.command or entry.name or entry.command or entry.cmd_str or 'NULL',
+      text = text,
       keymap = entry.keymap,
       name = entry.name,
       handler = entry.handler,
@@ -154,8 +173,24 @@ end
 local function show_keymap(buf_id, items, query, pos, line, i)
   if not items[line] then return end
   if items[line].keymap and items[line].keymap ~= '' and M.opts.mini_pick.show_key then
-    local width = H.compiled_width[i] - #items[line].keymap
-    local text = { { pad_str('(' .. items[line].keymap .. ')', width), 'Constant' } }
+    local width = pos + #items[line].keymap
+    local remaining = H.compiled_width[i] - pos
+    local keymap_str = items[line].keymap
+    if width > H.compiled_width[i] then keymap_str = keymap_str:sub(0, remaining - 6) .. '...' end
+    local text = { { '(' .. keymap_str .. ')', 'Constant' } }
+    vim.api.nvim_buf_set_extmark(buf_id, H.ids.keymap, line - 1, 0, {
+      virt_text = text,
+      virt_text_win_col = pos,
+      hl_mode = 'combine',
+    })
+  end
+end
+
+local function show_desc(buf_id, items, query, pos, line, i)
+  if not items[line] then return end
+  if items[line].desc and items[line].desc ~= '' then
+    local width = H.compiled_width[i] - #items[line].desc
+    local text = { { pad_str(items[line].desc, width), 'Special' } }
     vim.api.nvim_buf_set_extmark(buf_id, H.ids.keymap, line - 1, 0, {
       virt_text = text,
       virt_text_win_col = pos,
@@ -173,10 +208,8 @@ local function show(buf_id, items, query)
       local text_width = #item.text
       show_keymap(buf_id, items, query, text_width + 2, line, 1)
     end
-    -- for i = 1, #H.opts.items do
-    --   width = width + (M._cache.compiled_width[i - 1] or 0)
-    --   if H[H.opts.order[i]] then H[H.opts.order[i]](buf_id, items, query, width, line, i) end
-    -- end
+    width = width + H.compiled_width[1]
+    show_desc(buf_id, items, query, width, line, 2)
   end
 end
 

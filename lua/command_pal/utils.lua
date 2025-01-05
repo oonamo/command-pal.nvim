@@ -89,4 +89,11 @@ function M.get_digit_len(digit)
   if digit < 1000 then return 3 end
 end
 
+function M.func_to_str(fn, ...)
+  if type(fn) ~= 'function' then return tostring(fn) end
+
+  local result = fn(...)
+  return tostring(result)
+end
+
 return M
