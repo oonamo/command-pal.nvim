@@ -16,8 +16,7 @@ local M = {}
 ---@class builtin.BuiltinT
 ---@field [string] builtin.Value
 
--- TODO: use scripte for this
---
+-- TODO: use script for this
 -- '<,'>s/|:\(.*\)|\s*:\S*\s*\(.*\)/[":\1"]={name=[[\1]], desc = [[\2]], command = true},
 M.builtin = {
   [':range'] = { name = [[range]], desc = [[go to last line in {range}]] },
