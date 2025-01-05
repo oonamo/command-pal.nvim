@@ -71,11 +71,12 @@ local function entry_display(opts)
   H.compiled_width = H.calculate_widths(opts)
   return function(entry)
     local comp_str = ''
-    for i, v in ipairs(H.compiled_width) do
-      if entry[i] then comp_str = comp_str .. pad_str(entry[i], v) .. (opts.separator or ' ') end
-    end
+    -- for i, v in ipairs(H.compiled_width) do
+    --   if entry[i] then comp_str = comp_str .. pad_str(entry[i], v) .. (opts.separator or ' ') end
+    -- end
     return {
-      text = comp_str,
+      text = entry.command,
+      -- text = comp_str,
       name = entry.name,
       handler = entry.handler,
       command = entry.command,
