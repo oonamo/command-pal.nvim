@@ -8,7 +8,7 @@ local H = {}
 H.opts = {
   items = {
     { width = 0.3 },
-    { width = 0.7 },
+    { width = 0.7, remaining = true },
     -- { width = 10, remaining = true },
   },
   order = {
@@ -34,7 +34,12 @@ function H.calculate_widths(opts)
   if M.ivy then
     H.width = vim.o.columns
   else
-    H.width = minipick.config.window.height or math.floor(vim.o.columns * 0.618)
+    local config = minipick.config.window.config
+    local width = nil
+    if vim.is_callable(config) then width = config().width end
+
+    if not width or width == 0 then width = math.floor(vim.o.columns * 0.618) end
+    H.width = width
   end
   local total = 0
   local compiled_width = {}
@@ -49,7 +54,10 @@ function H.calculate_widths(opts)
       compiled_width[i] = result
     end
   end
-  if opts.items[#opts.items].remaining then compiled_width[#compiled_width] = (H.width or vim.o.columns) - total end
+  if opts.items[#opts.items].remaining then
+    total = total - compiled_width[#compiled_width]
+    compiled_width[#compiled_width] = (H.width or vim.o.columns) - total
+  end
   return compiled_width
 end
 
@@ -94,7 +102,6 @@ local function entry_display(opts)
     else
       text = 'NULL'
     end
-    print(text)
     -- local text = entry.command
     -- if not entry.command or not entry.name or not entry.command or not entry.cmd_str then
     --     vim.print(entry)
@@ -149,7 +156,6 @@ local function get_items(results)
   for k, v in pairs(results) do
     items[k] = format_item(v)
   end
-  -- vim.print(items)
   return items
 end
 
@@ -159,7 +165,9 @@ local function get_ivy_theme()
       config = {
         width = vim.o.columns,
         height = math.floor(vim.o.lines * 0.3),
+        border = 'solid',
       },
+      prompt_prefix = 'M-x ',
     }
   end
   return {}
@@ -189,7 +197,7 @@ end
 local function show_desc(buf_id, items, query, pos, line, i)
   if not items[line] then return end
   if items[line].desc and items[line].desc ~= '' then
-    local width = H.compiled_width[i] - #items[line].desc
+    local width = H.compiled_width[i]
     local text = { { pad_str(items[line].desc, width), 'Special' } }
     vim.api.nvim_buf_set_extmark(buf_id, H.ids.keymap, line - 1, 0, {
       virt_text = text,
@@ -218,8 +226,8 @@ end
 ---@param results palette.MappedAction
 function M.pick(opts, results)
   M.opts = opts
-  M.ivy = true
-  if opts.mini_pick.ivy_style == false then M.ivy = false end
+  M.ivy = opts.mini_pick.ivy_style
+  if not H.compiled_width then H.compiled_width = H.calculate_widths(H.opts) end
   minipick.start({
     source = {
       name = opts.mini_pick.title,
