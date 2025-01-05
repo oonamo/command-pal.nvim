@@ -20,12 +20,18 @@ function M.__command_displayer(opts)
   local make_display = function(entry)
     local col1 = entry.name
     local name_hl = {}
+
     if entry.keymap and entry.keymap ~= '' and opts.telescope.show_key then
       local hl_start = #entry.name + 1
       local hl_end = hl_start + #entry.keymap + 2
       table.insert(name_hl, { { hl_start, hl_end }, 'TelescopeResultsConstant' })
       col1 = col1 .. ' (' .. entry.keymap .. ')'
-    elseif entry.cmd_str and #entry.cmd_str < opts.max_command_len and opts.telescope.show_command then
+    elseif
+      entry.cmd_str
+      and entry.cmd_str ~= ''
+      and #entry.cmd_str < opts.max_command_len
+      and opts.telescope.show_command
+    then
       local hl_start = #entry.name + 1
       local hl_end = hl_start + #entry.cmd_str + 2
       table.insert(name_hl, { { hl_start, hl_end }, 'TelescopeResultsFunction' })

@@ -7,8 +7,8 @@ local H = {}
 
 H.opts = {
   items = {
-    { width = 0.2 },
-    { width = 0.6 },
+    { width = 0.3 },
+    { width = 0.7 },
     { width = 10, remaining = true },
   },
 }
@@ -53,8 +53,8 @@ local function pad_str(str, len)
 end
 
 local display_lines = {
-  'desc',
   'name',
+  'desc',
   'cmd_str',
 }
 
@@ -88,10 +88,22 @@ end
 local displayer = entry_display(H.opts)
 
 local function format_item(item)
+  local col1 = item.name
+  if item.keymap and item.keymap ~= '' and M.opts.mini_pick.show_key then
+    col1 = col1 .. ' (' .. item.keymap .. ')'
+  elseif
+    item.cmd_str
+    and item.cmd_str ~= ''
+    and #item.cmd_str < M.opts.max_command_len
+    and M.opts.mini_pick.show_command
+  then
+    col1 = col1 .. ' (' .. item.cmd_str .. ')'
+  end
   return displayer({
-    item.name,
+    col1,
+    -- item.name,
     item.desc,
-    item.cmd_str,
+    -- item.cmd_str,
     name = item.name,
     desc = item.desc,
     handler = item.handler,
